@@ -1,0 +1,158 @@
+﻿<Window x:Class="DecodeToolGUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DecodeToolGUI"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <DockPanel>
+        <!-- Single Menu with ItemsPanel set to DockPanel so items can be docked left/right -->
+        <Menu DockPanel.Dock="Top">
+            <Menu.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <!-- Use DockPanel so we can dock one MenuItem to Right -->
+                    <DockPanel LastChildFill="True"/>
+                </ItemsPanelTemplate>
+            </Menu.ItemsPanel>
+
+            <MenuItem Header="Config">
+                <MenuItem Header="Download Latest Binary" Command="{Binding OpenDownloadCommand}"/>
+            </MenuItem>
+
+            <MenuItem x:Name="LocalVersionMenuItem"
+                      Header="Decode Suite Version: null"
+                      IsEnabled="False"
+                      DockPanel.Dock="Right"
+                      ToolTip="Latest local downloaded version (null if none)"/>
+        </Menu>
+
+        <TabControl>
+            <TabItem Header="TBC Video Export">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- File selection row -->
+                    <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,8">
+                        <Button Content="Add .tbc Files..." Command="{Binding AddTbcFilesCommand}" Width="140"/>
+                        <Button Content="Remove Selected" Command="{Binding RemoveSelectedTbcCommand}" Margin="8,0,0,0" Width="120"/>
+                        <TextBlock Text="  Output:" VerticalAlignment="Center" Margin="16,0,4,0"/>
+                        <TextBox x:Name="OutputPathTextBox" Width="420" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- File list -->
+                    <ListBox x:Name="TbcFilesListBox"
+                             Grid.Row="1"
+                             ItemsSource="{Binding TbcFiles}"
+                             SelectedItem="{Binding SelectedTbcFile, Mode=TwoWay}"
+                             HorizontalContentAlignment="Left"/>
+
+                    <!-- Export options and controls -->
+                    <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0,8,0,0">
+                        <!-- First line: profile & chroma-decoder -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,6">
+                            <TextBlock Text="Profile:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <ComboBox x:Name="ProfileComboBox" Width="220" VerticalAlignment="Center" IsEditable="False">
+                                <!-- Profiles from wiki standard list -->
+                                <ComboBoxItem Content="default" IsSelected="True"/>
+                                <ComboBoxItem Content="ffv1"/>
+                                <ComboBoxItem Content="ffv1_8bit"/>
+                                <ComboBoxItem Content="ffv1_pcm"/>
+                                <ComboBoxItem Content="ffv1_8bit_pcm"/>
+                                <ComboBoxItem Content="prores_hq_422"/>
+                                <ComboBoxItem Content="prores_4444xq"/>
+                                <ComboBoxItem Content="v210"/>
+                                <ComboBoxItem Content="v410"/>
+                                <ComboBoxItem Content="x264_web"/>
+                                <ComboBoxItem Content="x265_web"/>
+                                <ComboBoxItem Content="D10_PAL"/>
+                                <ComboBoxItem Content="D10_NTSC"/>
+                            </ComboBox>
+
+                            <TextBlock Text="  Chroma-decoder:" VerticalAlignment="Center" Margin="12,0,6,0"/>
+                            <ComboBox x:Name="ChromaDecoderComboBox" Width="240" VerticalAlignment="Center" IsEditable="False">
+                                <!-- Decoders from wiki -->
+                                <ComboBoxItem Content="auto" IsSelected="True"/>
+                                <ComboBoxItem Content="mono"/>
+                                <ComboBoxItem Content="pal2d"/>
+                                <ComboBoxItem Content="transform2d"/>
+                                <ComboBoxItem Content="transform3d"/>
+                                <ComboBoxItem Content="ntsc1d"/>
+                                <ComboBoxItem Content="ntsc2d"/>
+                                <ComboBoxItem Content="ntsc3d"/>
+                                <ComboBoxItem Content="ntsc3dnoadapt"/>
+                            </ComboBox>
+
+                            <CheckBox x:Name="AddAudioCheckBox" Content="Include audio" IsChecked="True" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Second line: chroma params -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,6">
+                            <TextBlock Text="Chroma-gain:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <ComboBox x:Name="ChromaGainComboBox" Width="100" VerticalAlignment="Center" IsEditable="False">
+                                <ComboBoxItem Content="" IsSelected="True"/> <!-- default -->
+                                <ComboBoxItem Content="0.0"/>
+                                <ComboBoxItem Content="0.5"/>
+                                <ComboBoxItem Content="1.0"/>
+                                <ComboBoxItem Content="1.5"/>
+                                <ComboBoxItem Content="2.0"/>
+                            </ComboBox>
+
+                            <TextBlock Text="  Chroma-phase (deg):" VerticalAlignment="Center" Margin="12,0,6,0"/>
+                            <ComboBox x:Name="ChromaPhaseComboBox" Width="120" VerticalAlignment="Center" IsEditable="False">
+                                <ComboBoxItem Content="" IsSelected="True"/>
+                                <ComboBoxItem Content="-180"/>
+                                <ComboBoxItem Content="-90"/>
+                                <ComboBoxItem Content="-45"/>
+                                <ComboBoxItem Content="0"/>
+                                <ComboBoxItem Content="45"/>
+                                <ComboBoxItem Content="90"/>
+                                <ComboBoxItem Content="180"/>
+                            </ComboBox>
+
+                            <TextBlock Text="  Luma NR (dB):" VerticalAlignment="Center" Margin="12,0,6,0"/>
+                            <ComboBox x:Name="LumaNrComboBox" Width="100" VerticalAlignment="Center" IsEditable="False">
+                                <ComboBoxItem Content="" IsSelected="True"/>
+                                <ComboBoxItem Content="0"/>
+                                <ComboBoxItem Content="1"/>
+                                <ComboBoxItem Content="2"/>
+                                <ComboBoxItem Content="3"/>
+                                <ComboBoxItem Content="5"/>
+                                <ComboBoxItem Content="10"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Third line: transform-threshold, flags and start/cancel -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <TextBlock Text="Transform-threshold:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <ComboBox x:Name="TransformThresholdComboBox" Width="120" VerticalAlignment="Center" IsEditable="False">
+                                <ComboBoxItem Content="" IsSelected="True"/>
+                                <ComboBoxItem Content="0.1"/>
+                                <ComboBoxItem Content="0.2"/>
+                                <ComboBoxItem Content="0.3"/>
+                                <ComboBoxItem Content="0.4"/>
+                                <ComboBoxItem Content="0.5"/>
+                                <ComboBoxItem Content="0.6"/>
+                            </ComboBox>
+
+                            <CheckBox x:Name="NtscPhaseCompCheckBox" Content="NTSC phase compensation" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                            <CheckBox x:Name="LumaOnlyCheckBox" Content="Luma-only" Margin="8,0,0,0" VerticalAlignment="Center"/>
+
+                            <Button Content="Start Export" Command="{Binding StartExportCommand}" Width="120" Margin="12,0,0,0"/>
+                            <Button Content="Cancel" Command="{Binding CancelExportCommand}" Width="80" Margin="8,0,0,0"/>
+                            <ProgressBar x:Name="ExportProgressBar" Width="220" Height="16" Margin="12,0,0,0" Minimum="0" Maximum="100"/>
+                            <TextBlock x:Name="ExportStatusText" Text="Ready" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Tools"><Grid/></TabItem>
+            <TabItem Header="Settings"><Grid/></TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

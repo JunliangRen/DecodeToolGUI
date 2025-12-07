@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="DecodeToolGUI/DecodeToolGUI.csproj" />
+  <Project Path="DecodeToolLib/DecodeToolLib.csproj" />
+</Solution>
