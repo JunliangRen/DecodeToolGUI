@@ -1,0 +1,65 @@
+name: .NET Build (Windows)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build on Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore NuGet packages
+        run: dotnet restore DecodeToolGUI.slnx
+
+      - name: Build solution
+        run: dotnet build DecodeToolGUI.slnx --configuration Release --no-restore
+
+      - name: Run tests (if any)
+        run: |
+          echo "Running dotnet test for any test projects"
+          dotnet test --configuration Release --no-build --no-restore || true
+
+      - name: Publish projects
+        run: |
+          echo "Publishing projects to artifacts/publish"
+          dotnet publish DecodeToolGUI.slnx --configuration Release --no-build -o artifacts/publish
+
+      - name: Create release zip
+        run: |
+          echo "Creating artifacts/release.zip"
+          powershell -Command "if (Test-Path 'artifacts/release.zip') { Remove-Item 'artifacts/release.zip' -Force }"
+          powershell -Command "Compress-Archive -Path 'artifacts/publish/*' -DestinationPath 'artifacts/release.zip'"
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Use a unique tag name per run. Adjust to your tagging strategy if needed.
+          tag_name: ${{ github.run_number }}-${{ github.sha }}
+          release_name: Release ${{ github.run_number }}-${{ github.sha }}
+          draft: false
+          prerelease: false
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/release.zip
+          asset_name: DecodeToolGUI-${{ github.run_number }}.zip
+          asset_content_type: application/zip
